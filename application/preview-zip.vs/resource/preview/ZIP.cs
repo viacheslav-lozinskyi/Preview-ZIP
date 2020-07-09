@@ -144,7 +144,7 @@ namespace resource.preview
 
         private static string __GetPattern(Node node)
         {
-            return node.IsFolder ? atom.Trace.NAME.PATTERN.FOLDER : /*atom.Trace.NAME.PATTERN.ELEMENT*/"";
+            return node.IsFolder ? NAME.PATTERN.FOLDER : /*NAME.PATTERN.ELEMENT*/"";
         }
 
         private static string __GetUrl(Node node, string url)
