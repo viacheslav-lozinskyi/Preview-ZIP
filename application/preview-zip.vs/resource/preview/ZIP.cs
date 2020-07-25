@@ -25,6 +25,11 @@ namespace resource.preview
                 __Execute(a_Context, ZipFile.OpenRead(url));
                 __Execute(a_Context, 0, context, url);
             }
+            if (GetState() == STATE.CANCEL)
+            {
+                context.
+                    SendWarning(1, NAME.WARNING.TERMINATED);
+            }
         }
 
         private static void __Execute(Node node, ZipArchive data)
@@ -43,6 +48,10 @@ namespace resource.preview
             if ((data != null) && (string.IsNullOrEmpty(name) == false))
             {
                 var a_Index = name.IndexOf("\\");
+                if (GetState() == STATE.CANCEL)
+                {
+                    return;
+                }
                 if (a_Index < 0)
                 {
                     a_Index = name.IndexOf("/");
@@ -72,6 +81,10 @@ namespace resource.preview
 
         private static void __Execute(Node node, int level, atom.Trace context, string url)
         {
+            if (GetState() == STATE.CANCEL)
+            {
+                return;
+            }
             if (string.IsNullOrEmpty(node.Name) == false)
             {
                 context.
@@ -144,7 +157,7 @@ namespace resource.preview
 
         private static string __GetPattern(Node node)
         {
-            return node.IsFolder ? NAME.PATTERN.FOLDER : /*NAME.PATTERN.ELEMENT*/"";
+            return node.IsFolder ? NAME.PATTERN.FOLDER : NAME.PATTERN.ELEMENT;
         }
 
         private static string __GetUrl(Node node, string url)
