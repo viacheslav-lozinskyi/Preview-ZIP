@@ -91,7 +91,7 @@ namespace resource.preview
                     Clear().
                     SetContent(node.Name).
                     SetComment(__GetComment(node)).
-                    SetHint(__GetHint(node)).
+                    SetCommentHint(__GetHint(node)).
                     SetPattern(__GetPattern(node)).
                     SetUrl(__GetUrl(node, url)).
                     SetLevel(level).
