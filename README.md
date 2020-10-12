@@ -6,7 +6,7 @@
 ![Image](https://img.shields.io/badge/VS-2017-blueviolet)
 ![Image](https://img.shields.io/badge/VS-2015-blueviolet)
 
-### Now you can look inside ZIP file not opening it.
+### Now you can look inside [ZIP](https://en.wikipedia.org/wiki/Zip_(file_format)) files not opening it.
 ---
 
 ![Image](resource/video/Presentation1.gif)
