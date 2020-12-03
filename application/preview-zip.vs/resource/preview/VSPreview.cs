@@ -5,7 +5,7 @@ using System.IO.Compression;
 
 namespace resource.preview
 {
-    public class ZIP : cartridge.AnyPreview
+    internal class VSPreview : cartridge.AnyPreview
     {
         private class Node
         {
@@ -88,11 +88,10 @@ namespace resource.preview
             if (string.IsNullOrEmpty(node.Name) == false)
             {
                 context.
-                    Clear().
                     SetContent(node.Name).
                     SetComment(__GetComment(node)).
                     SetCommentHint(__GetHint(node)).
-                    SetPattern(__GetPattern(node)).
+                    SetType(__GetType(node)).
                     SetUrl(__GetUrl(node, url)).
                     SetLevel(level).
                     Send();
@@ -155,9 +154,9 @@ namespace resource.preview
             return node.IsFolder ? "" : "[[Compressed size]] / [[Full size]] / [[Compress ratio]]";
         }
 
-        private static string __GetPattern(Node node)
+        private static string __GetType(Node node)
         {
-            return node.IsFolder ? NAME.PATTERN.FOLDER : NAME.PATTERN.ELEMENT;
+            return node.IsFolder ? NAME.TYPE.FOLDER : NAME.TYPE.FILE;
         }
 
         private static string __GetUrl(Node node, string url)

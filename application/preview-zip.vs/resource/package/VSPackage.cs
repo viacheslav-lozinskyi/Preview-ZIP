@@ -21,14 +21,14 @@ namespace resource.package
             public const string EXTENSION = ".ZIP";
             public const string GUID = "3D481846-362D-429E-AFF7-0BF74A594CF9";
             public const string NAME = "Preview-ZIP";
-            public const string VERSION = "1.0.5";
+            public const string VERSION = "1.0.6";
         }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             {
                 cartridge.AnyPreview.Connect();
-                cartridge.AnyPreview.Register(cartridge.AnyPreview.MODE.PREVIEW, CONSTANT.EXTENSION, new preview.ZIP());
+                cartridge.AnyPreview.Register(cartridge.AnyPreview.MODE.PREVIEW, CONSTANT.EXTENSION, new preview.VSPreview());
             }
             {
                 await JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
