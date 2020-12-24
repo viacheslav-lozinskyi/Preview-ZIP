@@ -18,17 +18,12 @@ namespace resource.preview
             private List<Node> m_Children = new List<Node>();
         }
 
-        protected override void _Execute(atom.Trace context, string url)
+        protected override void _Execute(atom.Trace context, string url, int level)
         {
             var a_Context = new Node();
             {
                 __Execute(a_Context, ZipFile.OpenRead(url));
-                __Execute(a_Context, 0, context, url);
-            }
-            if (GetState() == STATE.CANCEL)
-            {
-                context.
-                    SendWarning(1, NAME.WARNING.TERMINATED);
+                __Execute(a_Context, level - 1, context, url);
             }
         }
 
@@ -88,13 +83,9 @@ namespace resource.preview
             if (string.IsNullOrEmpty(node.Name) == false)
             {
                 context.
-                    SetContent(node.Name).
-                    SetComment(__GetComment(node)).
-                    SetCommentHint(__GetHint(node)).
-                    SetType(__GetType(node)).
-                    SetUrl(__GetUrl(node, url)).
-                    SetLevel(level).
-                    Send();
+                    SetComment(__GetComment(node), __GetHint(node)).
+                    SetUrl(__GetUrl(node, url), "").
+                    Send(NAME.SOURCE.PREVIEW, __GetType(node), level, node.Name);
             }
             foreach (var a_Context in node.Children)
             {
