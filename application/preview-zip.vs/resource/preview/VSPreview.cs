@@ -1,11 +1,10 @@
-
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 
 namespace resource.preview
 {
-    internal class VSPreview : cartridge.AnyPreview
+    internal class VSPreview : extension.AnyPreview
     {
         private class Node
         {
@@ -18,32 +17,62 @@ namespace resource.preview
             private List<Node> m_Children = new List<Node>();
         }
 
-        protected override void _Execute(atom.Trace context, string url, int level)
+        protected override void _Execute(atom.Trace context, int level, string url, string file)
         {
             var a_Context = new Node();
             {
-                __Execute(a_Context, ZipFile.OpenRead(url));
-                __Execute(a_Context, level - 1, context, url);
+                __Execute(a_Context, ZipFile.OpenRead(file));
+                __Execute(context, level - 1, a_Context, file);
             }
         }
 
-        private static void __Execute(Node node, ZipArchive data)
+        private static void __Execute(atom.Trace context, int level, Node data, string file)
         {
-            if (data != null)
+            if (GetState() == NAME.STATE.CANCEL)
             {
-                foreach (var a_Context in data.Entries)
+                return;
+            }
+            if (string.IsNullOrEmpty(data.Name) == false)
+            {
+                context.
+                    SetComment(__GetComment(data), __GetHint(data)).
+                    SetProgress(__GetType(data) == NAME.TYPE.FILE ?__GetProgress(data) : NAME.PROGRESS.REMOVE, "[[[Compress Ratio]]]").
+                    SetUrl(__GetUrl(data, file)).
+                    Send(NAME.SOURCE.PREVIEW, __GetType(data), level, data.Name);
+            }
+            foreach (var a_Context in data.Children)
+            {
+                if (a_Context.IsFolder)
                 {
-                    __Execute(node, a_Context, a_Context.FullName);
+                    __Execute(context, level + 1, a_Context, Path.Combine(file, a_Context.Name));
+                }
+            }
+            foreach (var a_Context in data.Children)
+            {
+                if (a_Context.IsFolder == false)
+                {
+                    __Execute(context, level + 1, a_Context, Path.Combine(file, a_Context.Name));
                 }
             }
         }
 
-        private static void __Execute(Node node, ZipArchiveEntry data, string name)
+        private static void __Execute(Node data, ZipArchive file)
         {
-            if ((data != null) && (string.IsNullOrEmpty(name) == false))
+            if (file != null)
+            {
+                foreach (var a_Context in file.Entries)
+                {
+                    __Execute(data, a_Context, a_Context.FullName);
+                }
+            }
+        }
+
+        private static void __Execute(Node data, ZipArchiveEntry file, string name)
+        {
+            if ((file != null) && (string.IsNullOrEmpty(name) == false))
             {
                 var a_Index = name.IndexOf("\\");
-                if (GetState() == STATE.CANCEL)
+                if (GetState() == NAME.STATE.CANCEL)
                 {
                     return;
                 }
@@ -53,59 +82,30 @@ namespace resource.preview
                 }
                 if (a_Index < 0)
                 {
-                    var a_Context = __GetNode(node, name);
+                    var a_Context = __GetNode(data, name);
                     {
-                        a_Context.FullSize = (int)data.Length;
-                        a_Context.CompressedSize = (int)data.CompressedLength;
+                        a_Context.FullSize = (int)file.Length;
+                        a_Context.CompressedSize = (int)file.CompressedLength;
                         a_Context.IsFolder = false;
                     }
                 }
                 else
                 {
-                    var a_Context = __GetNode(node, name.Substring(0, a_Index));
+                    var a_Context = __GetNode(data, name.Substring(0, a_Index));
                     {
                         a_Context.Name = name.Substring(0, a_Index);
                         a_Context.IsFolder = true;
                     }
                     {
-                        __Execute(a_Context, data, name.Substring(a_Index + 1, name.Length - a_Index - 1));
+                        __Execute(a_Context, file, name.Substring(a_Index + 1, name.Length - a_Index - 1));
                     }
                 }
             }
         }
 
-        private static void __Execute(Node node, int level, atom.Trace context, string url)
+        private static Node __GetNode(Node data, string name)
         {
-            if (GetState() == STATE.CANCEL)
-            {
-                return;
-            }
-            if (string.IsNullOrEmpty(node.Name) == false)
-            {
-                context.
-                    SetComment(__GetComment(node), __GetHint(node)).
-                    SetUrl(__GetUrl(node, url), "").
-                    Send(NAME.SOURCE.PREVIEW, __GetType(node), level, node.Name);
-            }
-            foreach (var a_Context in node.Children)
-            {
-                if (a_Context.IsFolder)
-                {
-                    __Execute(a_Context, level + 1, context, Path.Combine(url, a_Context.Name));
-                }
-            }
-            foreach (var a_Context in node.Children)
-            {
-                if (a_Context.IsFolder == false)
-                {
-                    __Execute(a_Context, level + 1, context, Path.Combine(url, a_Context.Name));
-                }
-            }
-        }
-
-        private static Node __GetNode(Node node, string name)
-        {
-            foreach (var a_Context in node.Children)
+            foreach (var a_Context in data.Children)
             {
                 if (a_Context.Name.ToUpper() == name.ToUpper())
                 {
@@ -121,38 +121,50 @@ namespace resource.preview
                     a_Result.IsFolder = false;
                 }
                 {
-                    node.Children.Add(a_Result);
+                    data.Children.Add(a_Result);
                 }
                 return a_Result;
             }
         }
 
-        private static string __GetComment(Node node)
+        private static string __GetComment(Node data)
         {
-            if (node.IsFolder == false)
+            if (data.IsFolder == false)
             {
-                if (node.FullSize > 0)
+                if (data.FullSize > 0)
                 {
-                    return node.CompressedSize.ToString() + " / " + node.FullSize.ToString() + " / " + (100 - ((node.CompressedSize * 100) / node.FullSize)).ToString() + "%";
+                    return data.CompressedSize.ToString() + " / " + data.FullSize.ToString() + " / " + (100 - ((data.CompressedSize * 100) / data.FullSize)).ToString() + "%";
                 }
-                return node.FullSize.ToString() + " / 0%";
+                return data.FullSize.ToString() + " / 0%";
             }
             return "";
         }
 
-        private static string __GetHint(Node node)
+        private static int __GetProgress(Node data)
         {
-            return node.IsFolder ? "" : "[[Compressed size]] / [[Full size]] / [[Compress ratio]]";
+            if (data.IsFolder == false)
+            {
+                if (data.FullSize > 0)
+                {
+                    return 100 - ((data.CompressedSize * 100) / data.FullSize);
+                }
+            }
+            return 0;
         }
 
-        private static string __GetType(Node node)
+        private static string __GetHint(Node data)
         {
-            return node.IsFolder ? NAME.TYPE.FOLDER : NAME.TYPE.FILE;
+            return data.IsFolder ? "" : "[[[Compressed size]]] / [[[Full size]]] / [[[Compress ratio]]]";
         }
 
-        private static string __GetUrl(Node node, string url)
+        private static string __GetType(Node data)
         {
-            return node.IsFolder ? "" : url;
+            return data.IsFolder ? NAME.TYPE.FOLDER : NAME.TYPE.FILE;
+        }
+
+        private static string __GetUrl(Node data, string url)
+        {
+            return data.IsFolder ? "" : url;
         }
     };
 }
