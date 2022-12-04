@@ -36,7 +36,7 @@ namespace resource.preview
             {
                 context.
                     SetComment(__GetComment(data), __GetHint(data)).
-                    SetProgress(__GetType(data) == NAME.TYPE.FILE ?__GetProgress(data) : NAME.PROGRESS.REMOVE, "[[[Compress Ratio]]]").
+                    SetProgress(__GetType(data) == NAME.EVENT.FILE ?__GetProgress(data) : NAME.PROGRESS.REMOVE, "[[[Compress Ratio]]]").
                     SetUrl(__GetUrl(data, file)).
                     Send(NAME.SOURCE.PREVIEW, __GetType(data), level, data.Name);
             }
@@ -159,7 +159,7 @@ namespace resource.preview
 
         private static string __GetType(Node data)
         {
-            return data.IsFolder ? NAME.TYPE.FOLDER : NAME.TYPE.FILE;
+            return data.IsFolder ? NAME.EVENT.FOLDER : NAME.EVENT.FILE;
         }
 
         private static string __GetUrl(Node data, string url)
