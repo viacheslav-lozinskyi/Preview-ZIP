@@ -24,7 +24,7 @@ namespace resource.package
             public const string DESCRIPTION = "Quick preview of ZIP files";
             public const string GUID = "3D481846-362D-429E-AFF7-0BF74A594CF9";
             public const string NAME = "Preview-ZIP";
-            public const string VERSION = "1.0.12";
+            public const string VERSION = "1.0.13";
         }
 
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
