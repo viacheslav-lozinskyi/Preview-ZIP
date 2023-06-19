@@ -28,7 +28,7 @@ namespace resource.preview
 
         private static void __Execute(atom.Trace context, int level, Node data, string file)
         {
-            if (GetState() == NAME.STATE.CANCEL)
+            if (GetState() == NAME.STATE.WORK.CANCEL)
             {
                 return;
             }
@@ -36,7 +36,7 @@ namespace resource.preview
             {
                 context.
                     SetComment(__GetComment(data), __GetHint(data)).
-                    SetProgress(__GetType(data) == NAME.EVENT.FILE ?__GetProgress(data) : NAME.PROGRESS.REMOVE, "[[[Compress Ratio]]]").
+                    SetProgress(__GetType(data) == NAME.EVENT.FILE ?__GetProgress(data) : CONSTANT.PROGRESS.REMOVE, "[[[Compress Ratio]]]").
                     SetUrl(__GetUrl(data, file)).
                     Send(NAME.SOURCE.PREVIEW, __GetType(data), level, data.Name);
             }
@@ -72,7 +72,7 @@ namespace resource.preview
             if ((file != null) && (string.IsNullOrEmpty(name) == false))
             {
                 var a_Index = name.IndexOf("\\");
-                if (GetState() == NAME.STATE.CANCEL)
+                if (GetState() == NAME.STATE.WORK.CANCEL)
                 {
                     return;
                 }
